@@ -11,7 +11,7 @@ import crypto from 'crypto';
  * @param {UserSchemaPluginInterface} options - Plugin configuration options
  */
 export function UserSchemaPlugin(schema: Schema, options: UserSchemaPluginInterface) {
-    const { jwtOptions, jwtSecret, enabledOtp, addResetToken } = options;
+    const { jwtOptions, jwtSecret, addResetToken } = options;
 
     /**
      * Pre-save hook to hash password if it is modified.
@@ -45,28 +45,6 @@ export function UserSchemaPlugin(schema: Schema, options: UserSchemaPluginInterf
     schema.methods.isPasswordCorrected = async function (this: UserDocument, password: string) {
         return await isPasswordCorrected.call(this, password)
     }
-    if (enabledOtp != undefined) {
-        if (!schema.path('otp')) {
-            schema.add({
-                otp: {
-                    type: Number,
-                    required: false
-                },
-                otpExpiresIn: {
-                    type: Date,
-                    required: false
-                }
-            });
-        }
-    }
-    schema.methods.generateOtp = function (this: UserDocument, length: number): number {
-        return generateOtp.call(this, length, enabledOtp!);
-    };
-
-    schema.methods.verifyOtp = function (this: UserDocument, otp: number): boolean {
-        return verifyOtp.call(this, otp);
-    };
-
 
     if (addResetToken != undefined) {
         if (!schema.path('resetPasswordToken')) {

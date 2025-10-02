@@ -1,4 +1,5 @@
 import { SignOptions } from 'jsonwebtoken';
+import { otpType } from './otpSchema.types';
 
 /**
  * JWT signing options for access and optionally refresh tokens.
@@ -46,13 +47,6 @@ interface UserSchemaPluginInterface {
     jwtOptions: jwtOptions;
 
     /**
-     * Enable OTP (One-Time Password) functionality.
-     * Can be a boolean or an object with enable flag and expiration time.
-     * Optional.
-     */
-    enabledOtp?: boolean | options;
-
-    /**
      * Enable reset token functionality (e.g., for password reset).
      * Can be a boolean or an object with enable flag and expiration time.
      * Optional.
@@ -68,6 +62,7 @@ interface UserDocument extends Document {
     _id: string;
     refreshToken: string;
     password: string;
+    email: string;
 
     /**
      * Generates a JWT access token valid for the configured expiry.
@@ -87,24 +82,6 @@ interface UserDocument extends Document {
      * @returns {Promise<boolean>} True if password matches, else false.
      */
     isPasswordCorrected(password: string): Promise<boolean>;
-
-    otp?: number;
-
-    otpExpiresIn?: number;
-
-    /**
-     * Generates a numeric OTP of the specified length and sets expiration.
-     * @param {number} length - Number of digits in the OTP.
-     * @returns {number} The generated OTP.
-     */
-    generateOtp?(length: number): number;
-
-    /**
-     * Verifies if the provided OTP matches the stored OTP and is not expired.
-     * @param {number} otp - OTP to verify.
-     * @returns {boolean} True if OTP is valid, else false.
-     */
-    verifyOtp?(otp: number): boolean;
 
     resetPasswordToken?: string;
 

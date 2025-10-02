@@ -1,2 +1,2 @@
-export { UserSchemaPlugin } from "./plugins/userSchema.plugin";
+export * from './plugins'
 export * from "./types"

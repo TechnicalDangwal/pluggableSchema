@@ -1,36 +1,7 @@
-import { options, UserDocument } from "../types";
+import { options, otpDocument, otpType, UserDocument } from "../types";
 import jwt, { SignOptions } from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
-
-/**
- * Generates a numeric OTP of given length and sets expiry.
- * @param {number} length - OTP digit length
- * @returns {number} Generated OTP
- */
-function generateOtp(this: UserDocument, length: number, enabledOtp: boolean | options) {
-    const digits = '0123456789';
-    const otp = Array.from({ length }, () =>
-        digits[Math.floor(Math.random() * digits.length)]
-    ).join('');
-
-    this.otp = Number(otp);
-    this.otpExpiresIn = typeof enabledOtp === "boolean" ? Date.now() + 5 * 60 * 1000 : enabledOtp.expiresIn;
-    this.save();
-    return Number(otp);
-};
-
-/**
- * Verifies if OTP matches and is not expired.
- * @param {number} otp - OTP to verify
- * @returns {boolean} True if valid OTP
- */
-function verifyOtp(this: UserDocument, otp: number) {
-    if (new Date(this.otpExpiresIn!).getTime() > Date.now()) {
-        return this.otp === otp;
-    }
-    return false;
-};
 
 /**
  * Generates a JWT refresh token, saves it on user document, and returns it.
@@ -106,4 +77,4 @@ function verifyResetPasswordToken(this: UserDocument, token: string): boolean {
     // Compare stored and input hashes
     return hashedInput === this.resetPasswordToken;
 };
-export { generateOtp, verifyOtp, generateRefreshToken, generateAccessToken, isPasswordCorrected, generateResetPasswordToken, verifyResetPasswordToken }
+export { generateRefreshToken, generateAccessToken, isPasswordCorrected, generateResetPasswordToken, verifyResetPasswordToken }
