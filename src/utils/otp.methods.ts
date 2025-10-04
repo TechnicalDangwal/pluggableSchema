@@ -40,6 +40,7 @@ async function generateOtp(this: otpDocument, length: number, enabledOtp: otpTyp
 async function verifyOtp(
     this: otpDocument,
     otp: string,
+    context: string,
     email: string | undefined,
     redisClient: RedisClientType | undefined,
 ): Promise<{ success: boolean; error?: string }> {
@@ -53,6 +54,9 @@ async function verifyOtp(
 
             const redisOtp = JSON.parse(data) as otpType & { otp: number };
 
+            if(redisOtp.context != context) {
+                return { success: false, error: 'OTP context mismatch' };
+            }
             if (redisOtp.maxAttempt <= 0) {
                 await redisClient.del(`otp:${email}`);
                 return { success: false, error: 'Maximum attempts exceeded' };
@@ -82,7 +86,9 @@ async function verifyOtp(
             await this.save();
             return { success: false, error: 'OTP expired' };
         }
-
+        if(this.otp.context != context) {
+            return { success: false, error: 'OTP context mismatch' };
+        }
         if (this.otp.maxAttempt <= 0) {
             this.otp = undefined
             await this.save()
