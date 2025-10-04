@@ -87,9 +87,10 @@ interface otpDocument extends Document {
      * Verifies if the provided OTP matches the stored OTP and is not expired.
      *
      * @param {string} otp - OTP to verify.
+     * @param {string} context - Context in which OTP is being verified.
      * @returns {Promise<{ success: boolean; error?: string }>} True if OTP is valid, otherwise false.
      */
-    verifyOtp(otp: string): Promise<{ success: boolean; error?: string }>;
+    verifyOtp(otp: string, context: string): Promise<{ success: boolean; error?: string }>;
 
     /**
      * Optional field containing OTP metadata and the OTP value itself.

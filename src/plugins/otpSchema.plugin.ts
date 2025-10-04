@@ -75,11 +75,13 @@ export function otpSchemaPlugin(schema: Schema, options: otpSchemaPluginInterfac
      */
     schema.methods.verifyOtp = function (
         this: otpDocument,
-        otp: string
+        otp: string,
+        context: string,
     ): Promise<{ success: boolean; error?: string }> {
         return verifyOtp.call(
             this,
             otp,
+            context,
             options.saveIn === saveIn.REDIS ? options.email : undefined,
             options.saveIn === saveIn.REDIS ? options.redisClient : undefined
         );
