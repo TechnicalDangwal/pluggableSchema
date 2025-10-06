@@ -18,7 +18,7 @@ export function UserSchemaPlugin(schema: Schema, options: UserSchemaPluginInterf
      */
     schema.pre("save", async function (next: () => void) {
         if (this.isModified("password")) {
-            this.password = await bcrypt.hash(this.password, 10);
+            this.password = await bcrypt.hash(this.password as string, 10);
         }
         next();
     });
