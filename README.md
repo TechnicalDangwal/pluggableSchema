@@ -101,22 +101,27 @@ await user.save();
 | `user.hasPermission(perm, resource?, opts?)` | Checks if the user's role grants the required permission, including ownership checks. | `Promise<boolean | Error>` |
 | `user.setRole(roleName)`                     | Sets the role field on the user document.                                             | `void`           |         |
 
-### B. RBAC Middleware (Express)
+### B. RBAC Middleware (Enforcement Layer)
 
-```ts
+The middleware enforces permissions on Express routes and handles HTTP error codes (401, 403).
+
+```typescript
 import { rbacMiddleware } from 'pluggable-schema/rbac/middleware';
 import PostModel from './models/Post';
 
-// Example: 'any' scope
-app.get('/api/admin/logs', rbacMiddleware('read:logs:any'), (req, res) => {
-    // Only users with 'read:logs:any' can access
+// Permission structure: action:resource:scope (e.g., 'update:post:own')
+
+// Example 1: 'any' scope (Only the base permission is required)
+app.get('/api/admin/logs', rbacMiddleware('read:logs'), (req, res) => {
+    // Permission granted if the user's role includes 'read:logs:any'
 });
 
-// Example: 'own' scope with resource fetching
+// Example 2: 'own' scope (The presence of getResource enables the ownership check if the role grants :own)
 app.put('/api/post/:id', rbacMiddleware(
-    'update:post:own', 
-    async (req) => await PostModel.findById(req.params.id),
-    { ownerField: 'authorId' }
+    // 👈 Only 'action:resource' is required. If getResource is present, the logic checks for both :any and :own in the RoleModel.
+    'update:post', 
+    async (req) => await PostModel.findById(req.params.id), // Fetches resource for comparison
+    { ownerField: 'authorId' } // Specifies the field used for ownership comparison (user._id === resource.authorId)
 ), (req, res) => {
     // Update the post
 });
