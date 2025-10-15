@@ -121,7 +121,54 @@ app.put('/api/post/:id', rbacMiddleware(
     // Update the post
 });
 ```
+### C. Role Definition (Creating Roles, Assigning & Listing Them)
 
+The library exposes the **`RoleModel`** for defining roles and their permissions in the database. Permissions must follow the **`action:resource:scope`** format.
+
+```typescript
+import { RoleModel } from 'pluggable-schema/rbac/models'; 
+import { User } from './models/User';
+
+// 1. Static Role Setup (Run once during app initialization)
+async function setupDefaultRoles() {
+    const adminPermissions = [
+        'read:logs:any',     // Permission to view any system logs
+        'update:user:any'    // Permission to update any user
+    ];
+    // Create the role document in the database
+    await RoleModel.createRole('admin', adminPermissions); 
+}
+
+// 2. Dynamic Role Creation (Example for an Admin API Endpoint)
+async function createNewRole(name: string, permissions: string[]) {
+    try {
+        await RoleModel.createRole(name, permissions);
+    } catch (error) {
+        console.error(`Failed to create role: ${error.message}`);
+    }
+}
+
+// 3. Assigning a Role to a User Instance
+async function assignRole(userId: string, roleName: string) {
+    const user = await User.findById(userId);
+
+    if (user) {
+        // This is the role assignment method added by rbacSchemaPlugin
+        user.setRole(roleName); 
+        await user.save();
+        console.log(`User ${userId} successfully assigned role: ${roleName}`);
+    }
+}
+// Example assignment:
+// assignRole('someUserId123', 'admin');
+
+
+// 4. Getting Available Roles (for UI/Forms)
+async function listRoles() {
+    const allRoles = await User.getAvailableRoles();
+    console.log('Available Roles:', allRoles); // Output: ["admin", "user"]
+}
+```
 ---
 
 ## 📱 Category III: One-Time Password (OTP) Management (`otpSchemaPlugin`)
