@@ -16,6 +16,8 @@ interface RoleDocument extends Document {
      * Format: "action:resource:scope" (e.g., "read:post:any")
      */
     permissions: string[];
+    /** The name of the role assigned to the user. Optional field. */
+    role?: string;
 }
 /**
  * Static methods available on the Role model.

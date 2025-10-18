@@ -1,6 +1,6 @@
 {
   "name": "pluggable-schema",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",
   "types": "dist/types/index.d.ts",
@@ -21,22 +21,21 @@
     "mongoose": "^8.0.0"
   },
   "dependencies": {
-    "@rollup/plugin-commonjs": "^28.0.6",
-    "@rollup/plugin-node-resolve": "^16.0.1",
-    "@rollup/plugin-typescript": "^12.1.4",
-    "@types/express": "^5.0.3",
     "bcrypt": "^6.0.0",
     "express": "^5.1.0",
-    "jsonwebtoken": "^9.0.2",
-    "redis": "^5.8.2",
-    "rollup": "^4.50.2",
-    "rollup-plugin-dts": "^6.2.3",
-    "tslib": "^2.8.1"
+    "jsonwebtoken": "^9.0.2"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.8",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "@rollup/plugin-typescript": "^12.1.4",
     "@types/bcrypt": "^6.0.0",
+    "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
     "mongoose": "^8.19.1",
+    "rollup": "^4.52.5",
+    "rollup-plugin-dts": "^6.2.3",
+    "tslib": "^2.8.1",
     "typescript": "^5.9.2"
   }
 }

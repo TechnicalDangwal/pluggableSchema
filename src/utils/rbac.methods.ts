@@ -6,7 +6,7 @@ async function hasPermission(this: RoleDocument,
     resource?: any,
     options: HasPermissionOptions = {}
 ): Promise<boolean> {
-    const user = this;
+    const user: any = this;
     // No role means no permissions
     if (!user.role) return false;
 

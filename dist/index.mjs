@@ -152,6 +152,58 @@ async function verifyOtp(otp, context, email, redisClient) {
     }
 }
 
+const RoleSchema = new Schema({
+    name: { type: String, required: true, unique: true },
+    permissions: { type: [String], default: [] },
+});
+/**
+ * Creates a new role with a set of permissions.
+ * Throws an error if the role already exists.
+ */
+RoleSchema.statics.createRole = async function (name, permissions) {
+    // console.log(this.findOne({name}),'this');
+    const existing = await this.findOne({ name });
+    console.log(existing, 'existing');
+    if (existing) {
+        throw new Error(`Role '${name}' already exists`);
+    }
+    return this.create({ name, permissions });
+};
+/**
+ * Retrieves a role by its name.
+ * Returns null if the role is not found.
+ */
+RoleSchema.statics.getRoleByName = async function (name) {
+    return this.findOne({ name });
+};
+const RoleModel = model("Role", RoleSchema);
+
+async function hasPermission(requestedPermission, resource, options = {}) {
+    const user = this;
+    // No role means no permissions
+    if (!user.role)
+        return false;
+    // Fetch role details from DB
+    const role = await RoleModel.findOne({ name: user.role }).lean();
+    if (!role)
+        return false;
+    const permissions = role.permissions || [];
+    // Split permission into parts: "action:resource:scope"
+    const [reqAction, reqResource] = requestedPermission.split(":");
+    const hasAnyPermission = permissions.includes(`${reqAction}:${reqResource}:any`);
+    if (hasAnyPermission)
+        return true;
+    const hasOwnPermission = permissions.includes(`${reqAction}:${reqResource}:own`);
+    if (!hasOwnPermission)
+        return false;
+    // If scope is 'own', validate ownership of the resource
+    const ownerField = options.ownerField || "ownerId";
+    if (!resource[ownerField]) {
+        throw new Error(`Resource missing ownership field '${ownerField}'`);
+    }
+    return user._id.toString() === resource[ownerField].toString();
+}
+
 /**
  * Mongoose plugin adding JWT auth, password hashing, OTP, and reset token functionality.
  *
@@ -283,32 +335,6 @@ function otpSchemaPlugin(schema, options) {
     };
 }
 
-const RoleSchema = new Schema({
-    name: { type: String, required: true, unique: true },
-    permissions: { type: [String], default: [] },
-});
-/**
- * Creates a new role with a set of permissions.
- * Throws an error if the role already exists.
- */
-RoleSchema.statics.createRole = async function (name, permissions) {
-    // console.log(this.findOne({name}),'this');
-    const existing = await this.findOne({ name });
-    console.log(existing, 'existing');
-    if (existing) {
-        throw new Error(`Role '${name}' already exists`);
-    }
-    return this.create({ name, permissions });
-};
-/**
- * Retrieves a role by its name.
- * Returns null if the role is not found.
- */
-RoleSchema.statics.getRoleByName = async function (name) {
-    return this.findOne({ name });
-};
-const RoleModel = model("Role", RoleSchema);
-
 /**
  * Mongoose schema plugin that adds an RBAC-based `hasPermission` method
  * to a user document.
@@ -329,7 +355,7 @@ function rbacSchemaPlugin(schema) {
     }
     /**
      * Checks if the user has a specific permission, optionally verifying ownership.
-     *
+     * @instance
      * @param {string} requestedPermission - The permission to check in the format `action:resource`.
      * @param {any} [resource] - Optional resource object used to verify ownership when scope is `'own'`.
      * @param {HasPermissionOptions} [options] - Options to customize the ownership field.
@@ -337,30 +363,7 @@ function rbacSchemaPlugin(schema) {
      * @returns {Promise<boolean>} - Resolves to `true` if permission is granted, otherwise `false`.
      */
     schema.methods.hasPermission = async function (requestedPermission, resource, options = {}) {
-        const user = this;
-        // No role means no permissions
-        if (!user.role)
-            return false;
-        // Fetch role details from DB
-        const role = await RoleModel.findOne({ name: user.role }).lean();
-        if (!role)
-            return false;
-        const permissions = role.permissions || [];
-        // Split permission into parts: "action:resource:scope"
-        const [reqAction, reqResource] = requestedPermission.split(":");
-        const hasAnyPermission = permissions.includes(`${reqAction}:${reqResource}:any`);
-        if (hasAnyPermission)
-            return true;
-        const hasOwnPermission = permissions.includes(`${reqAction}:${reqResource}:own`);
-        if (!hasOwnPermission)
-            return false;
-        // If scope is 'own', validate ownership of the resource
-        const ownerField = options.ownerField || "ownerId";
-        console.log(resource, 'resource');
-        if (!resource[ownerField]) {
-            throw new Error(`Resource missing ownership field '${ownerField}'`);
-        }
-        return user._id.toString() === resource[ownerField].toString();
+        return hasPermission.call(this, requestedPermission, resource, options);
     };
     /**
    * INSTANCE METHOD: Set the user's role
@@ -394,13 +397,11 @@ function rbacMiddleware(requiredPermission, getResource, options = {}) {
     return async function (req, res, next) {
         try {
             const user = req.user;
-            console.log(user, 'user in rbac');
             if (!user) {
                 return res.status(401).json({ error: "Unauthorized: No user attached to request" });
             }
             const resource = getResource ? await getResource(req) : undefined;
             const hasPerm = await user.hasPermission(requiredPermission, resource, options);
-            console.log(hasPerm, 'hasPerm');
             if (hasPerm instanceof Error) {
                 return res.status(400).json({ error: hasPerm.message });
             }

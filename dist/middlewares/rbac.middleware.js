@@ -15,13 +15,11 @@ export function rbacMiddleware(requiredPermission, getResource, options = {}) {
     return async function (req, res, next) {
         try {
             const user = req.user;
-            console.log(user, 'user in rbac');
             if (!user) {
                 return res.status(401).json({ error: "Unauthorized: No user attached to request" });
             }
             const resource = getResource ? await getResource(req) : undefined;
             const hasPerm = await user.hasPermission(requiredPermission, resource, options);
-            console.log(hasPerm, 'hasPerm');
             if (hasPerm instanceof Error) {
                 return res.status(400).json({ error: hasPerm.message });
             }
