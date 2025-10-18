@@ -6,6 +6,13 @@
 
 ---
 
+## 🔗 Links
+
+- **GitHub:** [Technical Dangwal](https://github.com/TechnicalDangwal/pluggable-schema)  
+- **npm:** [Aditya Dangwal](https://www.npmjs.com/package/pluggable-schema)
+
+---
+
 ## ✨ Core Features
 
 * 🧩 **Modular Architecture:** Add features like JWT, RBAC, and OTP to any schema independently without modifying core user logic.
