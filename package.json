@@ -4,6 +4,21 @@
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",
   "types": "dist/types/index.d.ts",
+   "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TechnicalDangwal/pluggableSchema.git"
+  },
+  "bugs": {
+    "url": "https://github.com/TechnicalDangwal/pluggableSchema/issues"
+  },
+  "homepage": "https://github.com/TechnicalDangwal/pluggableSchema#readme",
+  "keywords": [
+    "schema",
+    "plugin",
+    "pluggable",
+    "nodejs",
+    "module"
+  ],
   "exports": {
     ".": {
       "require": "./dist/index.cjs",
