@@ -9,7 +9,7 @@
 
 ## 🔗 Links
 
-- **GitHub:** [Technical Dangwal](https://github.com/TechnicalDangwal/pluggable-schema)  
+- **GitHub:** [Technical Dangwal](https://github.com/TechnicalDangwal/pluggableSchema)  
 - **npm:** [Aditya Dangwal](https://www.npmjs.com/package/pluggable-schema)
 
 ---
